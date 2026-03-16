@@ -8,7 +8,7 @@ This repository contains the GUI-focused version of H3MEX for Heroes 3: Horn of 
 
 Run from the repository root:
 
-`python h3mex_gui.py`
+`python h3mex.py`
 
 If needed, install the GUI dependency first:
 
