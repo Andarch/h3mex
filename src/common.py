@@ -1,0 +1,97 @@
+from enum import Enum, IntEnum, StrEnum
+
+
+class App(StrEnum):
+    # NAME = "H3 HotA Map Editor X"
+    NAME = "H3MEX"
+    VERSION = "1.0.0"
+
+
+class Cursor(StrEnum):
+    HIDE = "\x1b[?25l"
+    SHOW = "\x1b[?25h"
+    RESET = "\x1b[F"
+    ERASE = "\x1b[F\x1b[K"
+
+
+class Keypress(StrEnum):
+    BACKSPACE = "\x08"
+    ENTER = "\r"
+    ESC = "\x1b"
+    DOWN = "\x1b[B"
+    UP = "\x1b[A"
+
+
+class TextType(Enum):
+    INDENT = 0
+    NORMAL = 1
+    INFO = 2
+    GENERIC_MENU = 3
+    NUMBERED_MENU = 4
+    STRING_PROMPT = 5
+    ACTION = 6
+    DONE = 7
+    HEADER = 8
+    ERROR = 9
+
+
+class TextAlign(Enum):
+    LEFT = 1
+    CENTER = 2
+    MENU = 3
+    FLUSH = 4
+
+
+class TextColor(StrEnum):
+    RESET = "\x1b[0m"
+    # BOLD = "\x1b[1m"
+    FAINT = "\x1b[2m"
+    ITALIC = "\x1b[3m"
+    UNDERLINE = "\x1b[4m"
+    BLINK = "\x1b[5m"
+    INVERTED = "\x1b[7m"
+    STRIKE = "\x1b[9m"
+    BOLD_OFF = "\x1b[22m"
+    DEFAULT = "\x1b[39m"
+    RED = "\x1b[91m"
+    GREEN = "\x1b[92m"
+    YELLOW = "\x1b[93m"
+    BLUE = "\x1b[94m"
+    MAGENTA = "\x1b[35m"
+    CYAN = "\x1b[96m"
+    WHITE = "\x1b[97m"
+    GRAY = "\x1b[90m"
+
+
+class Wait(float, Enum):
+    TIC = 0.01
+    SHORT = 0.05
+    NORMAL = 0.75
+    LONG = 1.5
+
+
+class MapZ(IntEnum):
+    Ground = 0
+    Underground = 1
+
+
+class HotAEventType(IntEnum):
+    Hero = 0
+    Player = 1
+    Town = 2
+    Quest = 3
+
+
+class HotAEventAction(IntEnum):
+    ModifyVariable = 3
+    RemoveCurrentObject = 5
+    ExecuteEvent = 24
+    DisableEvent = 27
+
+
+class VariableValueMode(IntEnum):
+    InitialValue = 0
+    ImportFromPrevious = 1
+
+
+map_data = {}
