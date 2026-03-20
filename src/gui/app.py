@@ -40,10 +40,12 @@ SECTIONS = [
 
 
 class MainFrame(wx.Frame):
+    CONFIG_FILE = Path.home() / ".h3mex" / "config.json"
+
     def __init__(self) -> None:
         super().__init__(None, title=App.NAME, size=(1200, 800))
         self.session = MapSession()
-        self._current_dir = self._default_maps_directory()
+        self._current_dir = self._get_maps_directory()
         self._minimap_gap_size = 16
         self._minimap_resize_timer: wx.CallLater | None = None
         self._minimap_cached_image = None
@@ -67,7 +69,11 @@ class MainFrame(wx.Frame):
         file_menu.AppendSeparator()
         self._item_exit = file_menu.Append(wx.ID_EXIT, "E&xit")
 
+        settings_menu = wx.Menu()
+        self._item_maps_dir = settings_menu.Append(wx.ID_ANY, "&Maps Directory...")
+
         menubar.Append(file_menu, "&File")
+        menubar.Append(settings_menu, "&Settings")
         self.SetMenuBar(menubar)
 
         self.Bind(wx.EVT_MENU, self.on_open, self._item_open)
@@ -75,6 +81,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_save, self._item_save)
         self.Bind(wx.EVT_MENU, self.on_save_as, self._item_save_as)
         self.Bind(wx.EVT_MENU, self.on_exit, self._item_exit)
+        self.Bind(wx.EVT_MENU, self.on_change_maps_directory, self._item_maps_dir)
 
     def _build_layout(self) -> None:
         panel = wx.Panel(self)
@@ -527,11 +534,98 @@ class MainFrame(wx.Frame):
         dirty = " *" if self.session.dirty else ""
         self.SetTitle(f"{App.NAME} - GUI - {suffix}{dirty}")
 
+    def _load_config(self) -> dict[str, Any]:
+        """Load config from file, return empty dict if not found."""
+        try:
+            if self.CONFIG_FILE.exists():
+                with open(self.CONFIG_FILE, "r") as f:
+                    return json.load(f)
+        except Exception:
+            pass
+        return {}
+
+    def _save_config(self, config: dict[str, Any]) -> None:
+        """Save config to file."""
+        try:
+            self.CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.CONFIG_FILE, "w") as f:
+                json.dump(config, f, indent=2)
+        except Exception:
+            pass
+
     @staticmethod
-    def _default_maps_directory() -> str:
+    def _find_default_maps_directory() -> str:
+        """Try to find the Heroes 3 Maps directory from common installation locations."""
+        # Try common paths for different platforms
+        common_paths = [
+            Path("~/Heroes3/Maps").expanduser(),  # Linux home
+            Path("~/Library/Application Support/Heroes3/Maps").expanduser(),  # macOS
+            Path("~/.h3mex/maps").expanduser(),  # Fallback user directory
+            Path("/usr/share/games/Heroes3/Maps"),  # Linux system-wide
+            Path("/opt/Heroes3/Maps"),  # Linux alternate
+            Path("C:/3DO/Heroes3/Maps"),  # Windows classic
+            Path("C:/Program Files/Heroes of Might and Magic III/Maps"),  # Windows
+            Path("C:/Program Files (x86)/Heroes of Might and Magic III/Maps"),  # Windows 32-bit
+        ]
+
+        for path in common_paths:
+            if path.exists() and path.is_dir():
+                return str(path)
+
+        # Fall back to repo's maps directory
         repo_root = Path(__file__).resolve().parents[2]
         maps_dir = repo_root / "maps"
         return str(maps_dir if maps_dir.exists() else repo_root)
+
+    def _get_maps_directory(self) -> str:
+        """Get the maps directory from config or prompt the user to select it."""
+        config = self._load_config()
+
+        # If maps_dir is already configured, return it
+        if "maps_dir" in config:
+            maps_dir = Path(config["maps_dir"])
+            if maps_dir.exists() and maps_dir.is_dir():
+                return str(maps_dir)
+
+        # Try to find a default maps directory
+        default_dir = self._find_default_maps_directory()
+
+        # Show a dialog asking the user to select or confirm the maps directory
+        with wx.DirDialog(
+            self,
+            "Select your Heroes 3 Maps directory",
+            defaultPath=default_dir,
+            style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
+        ) as dialog:
+            if dialog.ShowModal() == wx.ID_OK:
+                selected_dir = dialog.GetPath()
+                config["maps_dir"] = selected_dir
+                self._save_config(config)
+                return selected_dir
+
+        # If cancelled, return the default
+        return default_dir
+
+    def on_change_maps_directory(self, _event: wx.CommandEvent) -> None:
+        """Handle the Settings > Maps Directory menu item."""
+        current_dir = self._current_dir
+        with wx.DirDialog(
+            self,
+            "Select your Heroes 3 Maps directory",
+            defaultPath=current_dir,
+            style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
+        ) as dialog:
+            if dialog.ShowModal() == wx.ID_OK:
+                new_dir = dialog.GetPath()
+                self._current_dir = new_dir
+                config = self._load_config()
+                config["maps_dir"] = new_dir
+                self._save_config(config)
+                wx.MessageBox(
+                    f"Maps directory changed to:\n{new_dir}",
+                    "Maps Directory Updated",
+                    wx.OK | wx.ICON_INFORMATION,
+                )
 
 
 def _load_map_worker(filepath: str, progress_queue: Any) -> None:
