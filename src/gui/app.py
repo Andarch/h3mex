@@ -9,6 +9,7 @@ from typing import Any
 
 import wx
 from PIL import Image as PILImage
+
 from src.common import App
 from src.models.map_session import MapSession
 from src.services.map_service import load_map, save_map
@@ -40,7 +41,7 @@ SECTIONS = [
 
 class MainFrame(wx.Frame):
     def __init__(self) -> None:
-        super().__init__(None, title=f"{App.NAME} - GUI", size=(1200, 800))
+        super().__init__(None, title=App.NAME, size=(1200, 800))
         self.session = MapSession()
         self._current_dir = self._default_maps_directory()
         self._minimap_gap_size = 16
