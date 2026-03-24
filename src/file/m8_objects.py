@@ -2,6 +2,7 @@ import os
 from enum import IntEnum
 
 from PIL import Image
+
 from src.defs import (
     artifacts,
     creatures,
@@ -837,12 +838,12 @@ def parse_event_object(obj: dict) -> dict:
     obj["difficulty"] = io.read_bits(4)
 
     # HotA 1.8.0 extended event system
-    unknown_byte = io.read_int(1)
-    if unknown_byte != 0:
+    obj["has_hota_event"] = io.read_int(1)
+    if obj["has_hota_event"]:
         obj["hero_event_id"] = io.read_int(4)
         obj["unknown_byte"] = io.read_int(1)
     else:
-        obj["unknown_byte"] = unknown_byte
+        obj["unknown_byte"] = 0
 
     return obj
 
@@ -866,7 +867,8 @@ def write_event_object(obj: dict) -> None:
 
     io.write_bits(obj["difficulty"])
 
-    if obj["unknown_byte"] != 0:
+    if obj["has_hota_event"]:
+        io.write_int(obj["has_hota_event"], 1)
         io.write_int(obj["hero_event_id"], 4)
         io.write_int(obj["unknown_byte"], 1)
     else:
