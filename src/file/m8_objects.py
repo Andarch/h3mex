@@ -838,7 +838,7 @@ def parse_event_object(obj: dict) -> dict:
     obj["difficulty"] = io.read_bits(4)
 
     # HotA 1.8.0 extended event system
-    obj["has_hota_event"] = io.read_int(1)
+    obj["has_hota_event"] = bool(io.read_int(1))
     if obj["has_hota_event"]:
         obj["hero_event_id"] = io.read_int(4)
         obj["unknown_byte"] = io.read_int(1)
