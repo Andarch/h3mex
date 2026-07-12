@@ -1,6 +1,8 @@
 from . import (
     artifacts,  # noqa: F401
+    conditions,  # noqa: F401
     creatures,  # noqa: F401
+    events,  # noqa: F401
     heroes,  # noqa: F401
     objects,  # noqa: F401
     players,  # noqa: F401

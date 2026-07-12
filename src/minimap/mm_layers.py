@@ -2,10 +2,195 @@ from src.defs import groups, objects  # noqa: F401
 
 MM_LAYERS = {
     "standard": {"display_name": "Standard Minimap", "filter": None, "subfilter": None},
+    "clean": {"display_name": "Clean Minimap", "filter": groups.DECOR, "subfilter": None},
     "base1": {"display_name": "Base Layer 1", "filter": groups.DECOR, "subfilter": None},
     "base2": {"display_name": "Base Layer 2", "filter": None, "subfilter": None},
     "border": {"display_name": "Border Objects", "filter": groups.BORDER, "subfilter": None},
-    "seershuts": {"display_name": "Seer's Huts", "filter": {objects.ID.Seers_Hut}, "subfilter": None},
+    "towns": {"display_name": "Towns", "filter": groups.TOWNS, "subfilter": None},
+    # "garrisonsonly": {
+    #     "display_name": "Garrisons",
+    #     "filter": {objects.ID.Garrison, objects.ID.Garrison_Vertical},
+    #     "subfilter": None,
+    # },
+    # "minesandwarehouses": {
+    #     "display_name": "Mines | Warehouses",
+    #     "combofilter": [
+    #         (objects.ID.Mine, {objects.SubID.Resource.Wood}),
+    #         (objects.ID.Mine, {objects.SubID.Resource.Ore}),
+    #         (objects.ID.Mine, {objects.SubID.Resource.Mercury}),
+    #         (objects.ID.Mine, {objects.SubID.Resource.Sulfur}),
+    #         (objects.ID.Mine, {objects.SubID.Resource.Crystal}),
+    #         (objects.ID.Mine, {objects.SubID.Resource.Gems}),
+    #         (objects.ID.Mine, {objects.SubID.Resource.Gold}),
+    #         (objects.ID.Mine, {objects.SubID.Resource.Abandoned}),
+    #         (objects.ID.Abandoned_Mine, {0}),
+    #         (objects.ID.HotA_Warehouse, {objects.SubID.Resource.Wood}),
+    #         (objects.ID.HotA_Warehouse, {objects.SubID.Resource.Ore}),
+    #         (objects.ID.HotA_Warehouse, {objects.SubID.Resource.Mercury}),
+    #         (objects.ID.HotA_Warehouse, {objects.SubID.Resource.Sulfur}),
+    #         (objects.ID.HotA_Warehouse, {objects.SubID.Resource.Crystal}),
+    #         (objects.ID.HotA_Warehouse, {objects.SubID.Resource.Gems}),
+    #         (objects.ID.HotA_Warehouse, {objects.SubID.Resource.Gold}),
+    #     ],
+    # },
+    # "mines": {
+    #     "display_name": "Mines",
+    #     "filter": {objects.ID.Mine, objects.ID.Abandoned_Mine},
+    #     "subfilter": None,
+    # },
+    # "warehouses": {
+    #     "display_name": "Warehouses",
+    #     "filter": {objects.ID.HotA_Warehouse},
+    #     "subfilter": None,
+    # },
+    # "stables": {
+    #     "display_name": "Stables",
+    #     "filter": {objects.ID.Stables},
+    #     "subfilter": None,
+    # },
+    # "trailblazer": {
+    #     "display_name": "Trailblazer",
+    #     "filter": {objects.ID.HotA_Visitable_1},
+    #     "subfilter": {objects.SubID.HotAVisitable1.Trailblazer},
+    # },
+    # "wateringplace": {
+    #     "display_name": "Watering Place",
+    #     "filter": {objects.ID.HotA_Visitable_1},
+    #     "subfilter": {objects.SubID.HotAVisitable1.Watering_Place},
+    # },
+    # "lighthouse": {
+    #     "display_name": "Lighthouse",
+    #     "filter": {objects.ID.Lighthouse},
+    #     "subfilter": None,
+    # },
+    # "multibonus": {
+    #     "display_name": "Multi-Bonus Objects",
+    #     "combofilter": [
+    #         (objects.ID.Rally_Flag, {0}),
+    #         (objects.ID.Idol_of_Fortune, {0}),
+    #         (objects.ID.Fountain_of_Youth, {0}),
+    #         (objects.ID.HotA_Visitable_1, {objects.SubID.HotAVisitable1.Mineral_Spring}),
+    #         (objects.ID.Oasis, {0}),
+    #         (objects.ID.Watering_Hole, {0}),
+    #     ],
+    # },
+    # "morale": {
+    #     "display_name": "Morale",
+    #     "combofilter": [
+    #         (objects.ID.Temple, {0}),
+    #         (objects.ID.Buoy, {0}),
+    #         (objects.ID.HotA_Visitable_1, {objects.SubID.HotAVisitable1.Temple_of_Loyalty}),
+    #     ],
+    # },
+    # "temple": {
+    #     "display_name": "Temple",
+    #     "filter": {objects.ID.Temple},
+    #     "subfilter": None,
+    # },
+    # "buoy": {
+    #     "display_name": "Buoy",
+    #     "filter": {objects.ID.Buoy},
+    #     "subfilter": None,
+    # },
+    # "templeofloyalty": {
+    #     "display_name": "Temple of Loyalty",
+    #     "filter": {objects.ID.HotA_Visitable_1},
+    #     "subfilter": {objects.SubID.HotAVisitable1.Temple_of_Loyalty},
+    # },
+    # "luck": {
+    #     "display_name": "Luck",
+    #     "combofilter": [
+    #         (objects.ID.Faerie_Ring, {0}),
+    #         (objects.ID.Fountain_of_Fortune, {0}),
+    #         (objects.ID.Swan_Pond, {0}),
+    #         (objects.ID.Mermaids, {0}),
+    #     ],
+    # },
+    # "faeriering": {
+    #     "display_name": "Faerie Ring",
+    #     "filter": {objects.ID.Faerie_Ring},
+    #     "subfilter": None,
+    # },
+    # "fountainoffortune": {
+    #     "display_name": "Fountain of Fortune",
+    #     "filter": {objects.ID.Fountain_of_Fortune},
+    #     "subfilter": None,
+    # },
+    # "swanpond": {
+    #     "display_name": "Swan Pond",
+    #     "filter": {objects.ID.Swan_Pond},
+    #     "subfilter": None,
+    # },
+    # "mermaids": {
+    #     "display_name": "Mermaids",
+    #     "filter": {objects.ID.Mermaids},
+    #     "subfilter": None,
+    # },
+    # "magicwell": {
+    #     "display_name": "Magic Well",
+    #     "filter": {objects.ID.Magic_Well},
+    #     "subfilter": None,
+    # },
+    # "magicspring": {
+    #     "display_name": "Magic Spring",
+    #     "filter": {objects.ID.Magic_Spring},
+    #     "subfilter": None,
+    # },
+    # "altarofmana": {
+    #     "display_name": "Altar of Mana",
+    #     "filter": {objects.ID.HotA_Visitable_2},
+    #     "subfilter": {objects.SubID.HotAVisitable2.Altar_of_Mana},
+    # },
+    # "learningstone": {
+    #     "display_name": "Learning Stone",
+    #     "filter": {objects.ID.Learning_Stone},
+    #     "subfilter": None,
+    # },
+    # "gazebo": {
+    #     "display_name": "Gazebo",
+    #     "filter": {objects.ID.HotA_Visitable_1},
+    #     "subfilter": {objects.SubID.HotAVisitable1.Gazebo},
+    # },
+    # "treeofknowledge": {
+    #     "display_name": "Tree of Knowledge",
+    #     "filter": {objects.ID.Tree_of_Knowledge},
+    #     "subfilter": None,
+    # },
+    # "altarofsacrifice": {
+    #     "display_name": "Altar of Sacrifice",
+    #     "filter": {objects.ID.Altar_of_Sacrifice},
+    #     "subfilter": None,
+    # },
+    # "dragonutopia": {
+    #     "display_name": "Dragon Utopia",
+    #     "filter": {objects.ID.Dragon_Utopia},
+    #     "subfilter": None,
+    # },
+    # "templeofthesea": {
+    #     "display_name": "Temple of the Sea",
+    #     "filter": {objects.ID.Creature_Bank},
+    #     "subfilter": {objects.SubID.CreatureBank.Temple_of_the_Sea},
+    # },
+    # "skeletontransformer": {
+    #     "display_name": "Skeleton Transformer",
+    #     "filter": {objects.ID.HotA_Visitable_1},
+    #     "subfilter": {objects.SubID.HotAVisitable1.Skeleton_Transformer},
+    # },
+    # "hillfort": {
+    #     "display_name": "Hill Fort",
+    #     "combofilter": [
+    #         (objects.ID.Hill_Fort, {objects.SubID.HillFort.Original}),
+    #         (objects.ID.Hill_Fort, {objects.SubID.HillFort.HotA}),
+    #     ],
+    # },
+    # "warmachinefactory": {
+    #     "display_name": "War Machine Factory | Cannon Yard",
+    #     "combofilter": [
+    #         (objects.ID.War_Machine_Factory, {objects.SubID.WarMachineFactory.Normal}),
+    #         (objects.ID.War_Machine_Factory, {objects.SubID.WarMachineFactory.Cannon}),
+    #     ],
+    # },
+    # "seershuts": {"display_name": "Seer's Huts", "filter": {objects.ID.Seers_Hut}, "subfilter": None},
     # "tents": {"display_name": "Keymaster's Tents", "filter": {objects.ID.Keymasters_Tent}, "subfilter": None},
     # "monoliths1_en": {
     #     "display_name": "One-Way Monolith Entrances",
@@ -43,11 +228,6 @@ MM_LAYERS = {
     #     "subfilter": groups.TWO_WAY_SEA_PORTALS,
     # },
     # "whirlpools": {"display_name": "Whirlpools", "filter": {objects.ID.Whirlpool}, "subfilter": None},
-    # "junkmen": {
-    #     "display_name": "Junkmen",
-    #     "filter": {objects.ID.HotA_Visitable_1},
-    #     "subfilter": {objects.SubID.HotAVisitable1.Junkman},
-    # },
     # "dwellings": {
     #     "display_name": "Dwellings",
     #     "filter": {
@@ -106,15 +286,34 @@ MM_LAYERS = {
     # "resources": {"display_name": "Resources", "filter": groups.RESOURCES, "subfilter": None},
     # "treasurechests": {"display_name": "Treasure Chests", "filter": {objects.ID.Treasure_Chest}, "subfilter": None},
     # "scholars": {"display_name": "Scholars", "filter": {objects.ID.Scholar}, "subfilter": None},
-    # "eventobjects": {"display_name": "Event Objects", "filter": {objects.ID.Event_Object}, "subfilter": None},
-    # "tradingposts": {"display_name": "Trading Posts", "filter": groups.TRADING_POSTS, "subfilter": None},
+    "eventobjects": {"display_name": "Event Objects", "filter": {objects.ID.Event_Object}, "subfilter": None},
+    # "tradingposts": {
+    #     "display_name": "Trading Posts",
+    #     "filter": groups.TRADING_POSTS,
+    #     "subfilter": None,
+    # },
     # "warlockslabs": {
     #     "display_name": "Warlock's Labs",
     #     "filter": {objects.ID.HotA_Visitable_1},
     #     "subfilter": {objects.SubID.HotAVisitable1.Warlocks_Lab},
     # },
+    # "blackmarket": {
+    #     "display_name": "Black Market",
+    #     "filter": {objects.ID.Black_Market},
+    #     "subfilter": None,
+    # },
+    # "junkmen": {
+    #     "display_name": "Junkmen",
+    #     "filter": {objects.ID.HotA_Visitable_1},
+    #     "subfilter": {objects.SubID.HotAVisitable1.Junkman},
+    # },
+    # "freelancersguild": {
+    #     "display_name": "Freelancer's Guild",
+    #     "filter": {objects.ID.Freelancers_Guild},
+    #     "subfilter": None,
+    # },
     # "redwoodobservatories": {
-    #     "display_name": "Redwood Observatories & Pillars of Fire",
+    #     "display_name": "Redwood Observatory | Pillar of Fire",
     #     "filter": {objects.ID.Redwood_Observatory, objects.ID.Pillar_of_Fire},
     #     "subfilter": {objects.SubID.Observation.Redwood_Observatory},
     # },
@@ -222,5 +421,33 @@ MM_LAYERS = {
     #     "display_name": "Taverns",
     #     "filter": {objects.ID.Tavern},
     #     "subfilter": None,
+    # },
+    # "secondaryskillobjects": {
+    #     "display_name": "Secondary Skill Objects",
+    #     "combofilter": [
+    #         (objects.ID.Witch_Hut, {0}),
+    #         (objects.ID.University, {0}),
+    #         (objects.ID.HotA_Visitable_2, {objects.SubID.HotAVisitable2.Seafaring_Academy}),
+    #     ],
+    # },
+    # "witchhuts": {
+    #     "display_name": "Witch Huts",
+    #     "filter": {objects.ID.Witch_Hut},
+    #     "subfilter": None,
+    # },
+    # "universities": {
+    #     "display_name": "Universities",
+    #     "filter": {objects.ID.University},
+    #     "subfilter": None,
+    # },
+    # "seafaringacademies": {
+    #     "display_name": "Seafaring Academies",
+    #     "filter": {objects.ID.HotA_Visitable_2},
+    #     "subfilter": {objects.SubID.HotAVisitable2.Seafaring_Academy},
+    # },
+    # "hermitsshacks": {
+    #     "display_name": "Hermit's Shack",
+    #     "filter": {objects.ID.HotA_Visitable_1},
+    #     "subfilter": {objects.SubID.HotAVisitable1.Hermits_Shack},
     # },
 }

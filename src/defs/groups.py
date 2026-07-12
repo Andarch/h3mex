@@ -55,6 +55,8 @@ RESOURCES = {objects.ID.Resource, objects.ID.Random_Resource}
 ##############################
 
 COLLECTIBLES = {
+    *ARTIFACTS,
+    *RESOURCES,
     objects.ID.Campfire,
     objects.ID.Flotsam,
     objects.ID.HotA_Pickup,
@@ -65,6 +67,23 @@ COLLECTIBLES = {
     objects.ID.Shipwreck_Survivor,
     objects.ID.Spell_Scroll,
     objects.ID.Treasure_Chest,
+}
+
+
+##############################
+# NON-PERMANENT BARRIERS
+##############################
+
+NON_PERMANENT_BLOCKING_OBJECTS = {
+    *HEROES,
+    *MONSTERS,
+    *COLLECTIBLES,
+    objects.ID.Border_Gate,
+    objects.ID.Border_Guard,
+    objects.ID.Garrison,
+    objects.ID.Garrison_Vertical,
+    objects.ID.Quest_Guard,
+    objects.ID.Event_Object,
 }
 
 

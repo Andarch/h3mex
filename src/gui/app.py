@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import multiprocessing as mp
 import queue
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -28,7 +29,8 @@ SECTIONS = [
     "conditions",
     "teams",
     "starting_heroes",
-    "ban_flags",
+    "settings",
+    "extended_events",
     "rumors",
     "hero_data",
     "terrain",
@@ -311,12 +313,8 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def _load_file(self, filepath: str) -> None:
-        progress_dialog = wx.ProgressDialog(
-            title="Loading map",
-            message="Loading...",
-            parent=self,
-            style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_ELAPSED_TIME,
-        )
+        progress_dialog = _LoadingDialog(self, title="Loading map", message="Loading...")
+        progress_dialog.Show()
 
         ctx = mp.get_context("spawn")
         progress_queue = ctx.Queue()
@@ -331,7 +329,7 @@ class MainFrame(wx.Frame):
                 try:
                     kind, payload = progress_queue.get_nowait()
                     if kind == "progress":
-                        progress_dialog.Pulse("Loading...")
+                        progress_dialog.set_message(str(payload))
                     elif kind == "result":
                         data = payload
                         break
@@ -339,7 +337,7 @@ class MainFrame(wx.Frame):
                         load_error = RuntimeError(payload)
                         break
                 except queue.Empty:
-                    progress_dialog.Pulse("Loading...")
+                    wx.YieldIfNeeded()
 
                 wx.YieldIfNeeded()
                 if not process.is_alive() and progress_queue.empty():
@@ -351,7 +349,7 @@ class MainFrame(wx.Frame):
             if data is None:
                 raise RuntimeError("Load process ended unexpectedly.")
 
-            progress_dialog.Pulse("Loading...")
+            progress_dialog.set_message("Loading map data...")
             wx.YieldIfNeeded()
             self.session.set_loaded_map(data["filename"], data)
             self._current_dir = str(Path(data["filename"]).parent)
@@ -359,8 +357,9 @@ class MainFrame(wx.Frame):
             self._render_overview_section()
             self._ensure_active_section_rendered(self.notebook.GetSelection())
             self._sync_layer_controls_state()
-            progress_dialog.Pulse("Loading...")
+            progress_dialog.set_message("Done")
             wx.YieldIfNeeded()
+            time.sleep(0.06)
             self._minimap_cached_image = None
             if self._is_minimap_tab_active(self.notebook.GetSelection()):
                 self._render_minimap_preview()
@@ -411,7 +410,55 @@ class MainFrame(wx.Frame):
             return
 
         section_data = self.session.data.get(section, "Section not available")
-        self.section_controls[section].SetValue(_as_json(section_data))
+        heavy_sections = {"terrain", "object_defs", "object_data"}
+        if section in heavy_sections:
+            self.section_controls[section].SetValue("Loading section data...")
+            self.SetStatusText(f"Formatting {section}...")
+            wx.YieldIfNeeded()
+
+            progress_dialog = _LoadingDialog(
+                self,
+                title=f"Loading {section}",
+                message="Formatting section data...",
+            )
+            progress_dialog.Show()
+
+            result_queue: queue.Queue[tuple[str, str]] = queue.Queue()
+
+            def _serialize_section() -> None:
+                try:
+                    result_queue.put(("result", _as_json(section_data)))
+                except Exception as exc:  # noqa: BLE001
+                    result_queue.put(("error", str(exc)))
+
+            worker = threading.Thread(target=_serialize_section, daemon=True)
+            worker.start()
+
+            try:
+                while worker.is_alive():
+                    progress_dialog.set_message("Formatting section data...")
+                    wx.YieldIfNeeded()
+                    time.sleep(0.03)
+
+                kind, payload = result_queue.get(timeout=1)
+                if kind == "error":
+                    raise RuntimeError(payload)
+                section_json = payload
+
+                # Keep dialog active while the UI text control is being populated.
+                progress_dialog.set_message("Rendering section...")
+                wx.YieldIfNeeded()
+
+                self.section_controls[section].SetValue(section_json)
+                progress_dialog.set_message("Done")
+                wx.YieldIfNeeded()
+                time.sleep(0.05)
+            finally:
+                progress_dialog.Destroy()
+
+            self.SetStatusText(f"Loaded {section}")
+        else:
+            self.section_controls[section].SetValue(_as_json(section_data))
         self._loaded_section_pages.add(section)
 
     def _render_minimap_preview(self) -> None:
@@ -638,6 +685,39 @@ def _load_map_worker(filepath: str, progress_queue: Any) -> None:
         progress_queue.put(("result", data))
     except Exception as exc:  # noqa: BLE001
         progress_queue.put(("error", str(exc)))
+
+
+class _LoadingDialog(wx.Dialog):
+    def __init__(self, parent: wx.Window, title: str, message: str) -> None:
+        super().__init__(
+            parent,
+            title=title,
+            style=wx.CAPTION | wx.STAY_ON_TOP,
+        )
+
+        panel = wx.Panel(self)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        self._message = wx.StaticText(panel, label=message)
+        self._message.Wrap(420)
+        sizer.Add(self._message, 0, wx.ALL, 16)
+
+        panel.SetSizer(sizer)
+
+        root = wx.BoxSizer(wx.VERTICAL)
+        root.Add(panel, 1, wx.EXPAND)
+        self.SetSizerAndFit(root)
+        self.CentreOnParent()
+
+        # Keep loading dialogs non-interactive; lifecycle is controlled by code.
+        self.Bind(wx.EVT_CLOSE, self._on_close)
+
+    def set_message(self, message: str) -> None:
+        self._message.SetLabel(message)
+        self.Layout()
+
+    def _on_close(self, event: wx.CloseEvent) -> None:
+        event.Veto()
 
 
 class H3MexGuiApp(wx.App):

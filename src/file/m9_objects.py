@@ -1,8 +1,8 @@
 import os
 from enum import IntEnum
+from pathlib import Path
 
 from PIL import Image
-
 from src.defs import (
     artifacts,
     creatures,
@@ -15,7 +15,7 @@ from src.defs import (
 )
 
 from . import io
-from .m6_rumors_and_events import parse_events, write_events
+from .m7_rumors_and_events import parse_events, write_events
 
 zonetypes_img_g = None
 zonetypes_img_u = None
@@ -131,12 +131,13 @@ def get_subtype(obj_type: int, i: int) -> int:
 def parse_object_data(filename: str, custom_heroes: list, object_defs: list) -> list:
     global zonetypes_img_g, zonetypes_img_u, zoneowners_img_g, zoneowners_img_u, has_zone_images
     filename = filename[:-4]
-    zonetypes_img_g_path = os.path.join("..", "maps/images", f"{filename}_zonetypes_g.png")
-    zonetypes_img_u_path = os.path.join("..", "maps/images", f"{filename}_zonetypes_u.png")
+    zone_images_dir = Path(r"C:\Users\Andy\Repos\h3mex\maps\images")
+    zonetypes_img_g_path = zone_images_dir / f"{filename}_zonetypes_g.png"
+    zonetypes_img_u_path = zone_images_dir / f"{filename}_zonetypes_u.png"
     zonetypes_img_g = Image.open(zonetypes_img_g_path).convert("RGBA") if os.path.exists(zonetypes_img_g_path) else None
     zonetypes_img_u = Image.open(zonetypes_img_u_path).convert("RGBA") if os.path.exists(zonetypes_img_u_path) else None
-    zoneowners_img_g_path = os.path.join("..", "maps/images", f"{filename}_zoneowners_g.png")
-    zoneowners_img_u_path = os.path.join("..", "maps/images", f"{filename}_zoneowners_u.png")
+    zoneowners_img_g_path = zone_images_dir / f"{filename}_zoneowners_g.png"
+    zoneowners_img_u_path = zone_images_dir / f"{filename}_zoneowners_u.png"
     zoneowners_img_g = (
         Image.open(zoneowners_img_g_path).convert("RGBA") if os.path.exists(zoneowners_img_g_path) else None
     )
@@ -153,7 +154,7 @@ def parse_object_data(filename: str, custom_heroes: list, object_defs: list) -> 
         obj["coords"][1] = io.read_int(1)
         obj["coords"][2] = io.read_int(1)
 
-        obj["coords_offset"] = ""
+        obj["coords_offset"] = None
         obj["zone_type"] = ""
         obj["zone_owner"] = ""
 
@@ -222,7 +223,7 @@ def parse_object_data(filename: str, custom_heroes: list, object_defs: list) -> 
             case objects.ID.Event_Object:
                 obj = parse_event_object(obj)
             case objects.ID.Flotsam:
-                obj = parse_flotsam(obj)
+                obj = parse_flotsam_jetsam(obj)
             case objects.ID.Lean_To:
                 obj = parse_lean_to(obj)
             case objects.ID.Pyramid:
@@ -380,7 +381,7 @@ def write_object_data(info: list) -> None:
             case objects.ID.Event_Object:
                 write_event_object(obj)
             case objects.ID.Flotsam:
-                write_flotsam(obj)
+                write_flotsam_jetsam(obj)
             case objects.ID.Lean_To:
                 write_lean_to(obj)
             case objects.ID.Pyramid:
@@ -517,7 +518,7 @@ def parse_hota_collectible(obj: dict) -> dict:
         case objects.SubID.HotAPickups.Sea_Barrel:
             obj = parse_sea_barrel(obj)
         case objects.SubID.HotAPickups.Jetsam:
-            obj = parse_flotsam(obj)
+            obj = parse_flotsam_jetsam(obj)
         case objects.SubID.HotAPickups.Vial_of_Mana:
             obj = parse_vial_of_mana(obj)
     return obj
@@ -530,7 +531,7 @@ def write_hota_collectible(obj: dict) -> None:
         case objects.SubID.HotAPickups.Sea_Barrel:
             write_sea_barrel(obj)
         case objects.SubID.HotAPickups.Jetsam:
-            write_flotsam(obj)
+            write_flotsam_jetsam(obj)
         case objects.SubID.HotAPickups.Vial_of_Mana:
             write_vial_of_mana(obj)
 
@@ -783,9 +784,10 @@ def write_campfire(obj: dict) -> None:
 def parse_bank(obj: dict) -> dict:
     obj["difficulty"] = io.read_int(4)
     obj["upgraded_stack"] = io.read_int(1)
+    obj["number_of_artifacts"] = io.read_int(4)
     obj["artifacts"] = []
 
-    for _ in range(io.read_int(4)):
+    for _ in range(obj["number_of_artifacts"]):
         obj["artifacts"].append(io.read_int(4))
 
     return obj
@@ -875,15 +877,15 @@ def write_event_object(obj: dict) -> None:
         io.write_int(0, 1)
 
 
-def parse_flotsam(obj: dict) -> dict:
+def parse_flotsam_jetsam(obj: dict) -> dict:
     obj["contents"] = io.read_int(4)
-    obj["trash_bytes"] = io.read_int(4)
+    obj["trash_bytes"] = io.read_raw(4)
     return obj
 
 
-def write_flotsam(obj: dict) -> None:
+def write_flotsam_jetsam(obj: dict) -> None:
     io.write_int(obj["contents"], 4)
-    io.write_int(obj["trash_bytes"], 4)
+    io.write_raw(obj["trash_bytes"])
 
 
 def parse_garrison(obj: dict) -> dict:
@@ -1961,7 +1963,7 @@ def get_zone(coords: list) -> tuple:
         ((zoneowners_img_g, zoneowners_img_u), objects.ZoneInfo.OWNERS, "zone_owner"),
     ):
         rgb, error = get_pixel_rgb(img_g, img_u)
-        zone_info[key] = error or lookup[rgb]
+        zone_info[key] = error or lookup.get(rgb, "Unknown")
 
     return zone_info["zone_type"], zone_info["zone_owner"]
 

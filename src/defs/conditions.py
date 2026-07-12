@@ -1,0 +1,25 @@
+from enum import IntEnum
+
+
+class VictoryType(IntEnum):
+    NONE = 255
+    ACQUIRE_ARTIFACT = 0
+    ACCUMULATE_CREATURES = 1
+    ACCUMULATE_RESOURCES = 2
+    UPGRADE_TOWN = 3
+    BUILD_THE_GRAIL = 4
+    DEFEAT_HERO = 5
+    CAPTURE_TOWN = 6
+    DEFEAT_MONSTER = 7
+    FLAG_DWELLINGS = 8
+    FLAG_MINES = 9
+    TRANSPORT_ARTIFACT = 10
+    ELIMINATE_MONSTERS = 11
+    SURVIVE = 12
+
+
+class LossType(IntEnum):
+    NONE = 255
+    LOSE_TOWN = 0
+    LOSE_HERO = 1
+    TIME_EXPIRES = 2

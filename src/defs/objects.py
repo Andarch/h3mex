@@ -247,7 +247,7 @@ class ID(IntEnum):
     Rocklands = 231
 
 
-class SubID(IntEnum):
+class SubID:
     class Boat(IntEnum):  # ID 8
         Boat_0 = 0
         Boat_1 = 1
@@ -286,7 +286,6 @@ class SubID(IntEnum):
         Derelict_Ship = 8
         Crypt = 9
         Dragon_Utopia = 10
-        # 11-20
         Beholders_Sanctuary = 21
         Temple_of_the_Sea = 22
         Pirate_Cavern = 23
@@ -424,7 +423,7 @@ class SubID(IntEnum):
         Anti_Magic = 1
 
     class HillFort(IntEnum):  # ID 35
-        Old = 0
+        Original = 0
         HotA = 1
 
     class Observation(IntEnum):  # ID 58
@@ -838,6 +837,7 @@ class ZoneInfo:
         (0, 115, 191): "II",
         (0, 62, 128): "III",
         (0, 23, 64): "IV",
+        (0, 0, 0): "Void",
     }
     OWNERS = {
         (179, 76, 76): players.ID.Red,
@@ -850,4 +850,5 @@ class ZoneInfo:
         (171, 129, 140): players.ID.Pink,
         (77, 77, 77): players.ID.Neutral,
         (80, 85, 88): players.ID.Neutral,
+        (0, 0, 0): "Void",
     }

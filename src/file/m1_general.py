@@ -1,6 +1,7 @@
 from enum import IntEnum
 
-# from src.common import VariableValueMode
+from src.defs.events import ExtendedEvents
+
 from . import io
 
 
@@ -46,8 +47,7 @@ def read_general() -> dict:
         "can_hire_defeated_heroes": False,
         "hota_versionLocked": False,
         "variable_count": 0,
-        # "variables": [],
-        "variables": b"",
+        "variables": [] if not ExtendedEvents.READ_RAW else b"",
         "has_hero": False,
         "map_size": MapSize.S,
         "has_underground": False,
@@ -81,16 +81,18 @@ def read_general() -> dict:
 
     info["variable_count"] = io.read_int(4)
     for _ in range(info["variable_count"]):
-        length_bytes = io.read_raw(4)
-        length = int.from_bytes(length_bytes, "little")
-        info["variables"] += length_bytes
-        info["variables"] += io.read_raw(length)
-        info["variables"] += io.read_raw(5)
-    # var = {}
-    # var["name"] = io.read_str(io.read_int(4))
-    # var["initial_value"] = io.read_int(4)
-    # var["value_mode"] = VariableValueMode(io.read_int(1))
-    # info["variables"].append(var)
+        if ExtendedEvents.READ_RAW:
+            length_bytes = io.read_raw(4)
+            length = int.from_bytes(length_bytes, "little")
+            info["variables"] += length_bytes
+            info["variables"] += io.read_raw(length)
+            info["variables"] += io.read_raw(5)
+        else:
+            var = {}
+            var["name"] = io.read_str(io.read_int(4))
+            var["initial_value"] = io.read_int(4)
+            var["value_mode"] = ExtendedEvents.VariableMode(io.read_int(1))
+            info["variables"].append(var)
 
     info["has_hero"] = bool(io.read_int(1))
     info["map_size"] = MapSize(io.read_int(4))
@@ -119,12 +121,14 @@ def write(info: dict) -> None:
     io.write_int(info["hota_versionLocked"], 1)
 
     io.write_int(info["variable_count"], 4)
-    io.write_raw(info["variables"])
-    # for var in info["variables"]:
-    #     io.write_int(len(var["name"]), 4)
-    #     io.write_str(var["name"])
-    #     io.write_int(var["initial_value"], 4)
-    #     io.write_int(var["value_mode"], 1)
+    if ExtendedEvents.READ_RAW:
+        io.write_raw(info["variables"])
+    else:
+        for var in info["variables"]:
+            io.write_int(len(var["name"]), 4)
+            io.write_str(var["name"])
+            io.write_int(var["initial_value"], 4)
+            io.write_int(var["value_mode"], 1)
 
     io.write_int(info["has_hero"], 1)
     io.write_int(info["map_size"], 4)

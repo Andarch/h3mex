@@ -1,1 +1,0 @@
-town_events = {}
